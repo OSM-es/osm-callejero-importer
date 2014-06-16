@@ -45,6 +45,9 @@ if(! isset($_POST["clase_via"]) || ! isset($_POST["nombre_via"]) || ! isset($_PO
 	exit;
 }
 
+
+mb_internal_encoding("UTF-8");
+
 $arrayWhere = array();
 
 if ($_POST["clase_via"]!="")
@@ -63,8 +66,9 @@ if ($_POST["codigo_postal"]!="")
 	$arrayWhere[] = "codigo_postal='".$_POST["codigo_postal"]."'";
 
 $sqlite3 = new \SQLite3("callejero-madrid.sqlite");
+$sql = "SELECT * FROM CALLEJERO WHERE ".join(" AND ", $arrayWhere)." ORDER BY direccion_completa ;";
 
-$query = $sqlite3->query("SELECT * FROM CALLEJERO WHERE ".join(" AND ", $arrayWhere)." ORDER BY direccion_completa ;");
+$query = $sqlite3->query($sql);
 
 header ("Content-Type: application/x-osm+xml");
 header('Content-Disposition: attachment; filename="callejero-import.osm"');
@@ -72,31 +76,81 @@ header('Content-Disposition: attachment; filename="callejero-import.osm"');
 echo "<?xml version='1.0' encoding='UTF-8'?>
 <osm version='0.6' upload='true' generator='davefx_osm_callejero_importer'>\n";
 
+//echo "<!-- QUERY  ".$sql." -->\n";
+
 $i=0;
 
 while ($data = $query->fetchArray(SQLITE3_ASSOC)) {
 	$i = $i - 1;
 
+
 	$number = $data["literal_numeracion"];
 	if (substr($number,0,3) == "NUM") {
 		$number = ltrim(substr($number, 3), "0");
 	} else if (subst($number, 0, 3) == "KM.") {
+		$number = substr($number,3);
+		$suffix = substr($number,6);
+		switch ($suffix) {
+		case "EN":
+			$suffix="entrada";
+			break;
+		case "SA":
+			$suffix="salida";
+			break;
+		case "EX":
+			$suffix="exterior";
+			break;
+		case "IN":
+			$suffix="interior";
+			break;
+		case " I":
+			$suffix="I";
+			break;
+		case " D":
+			$suffix="D";
+			break;
+		default:
+		}
+
+		$number = sprintf("%.3f",ltrim(substr($number, 0, 6),"0") / 1000);
 		
+		$number = str_replace($number, ".", ",");
+		$number = "Km ".$number." ".$suffix;
 	}
 
-	$street = ucwords_specific(mb_strtolower($data["clase_via"]), "'-")." ".$data["particula_via"]." ".ucwords_specific(mb_strtolower($data["nombre_via"]), "'-");
+	$street = ucwords_specific(mb_strtolower($data["clase_via"]), "'-", "UTF-8")." ".$data["particula_via"]." ".ucwords_specific(mb_strtolower($data["nombre_via"]), "'-", "utf-8");
 
-	echo "	<node id='$i' action='modify' visible='true' lat='".$data["Lat"]."' lon='".$data["Lon"]."'>
-                <tag k='addr:city' v='Madrid' />
-                <tag k='addr:country' v='ES' />
+	if ($data["Lat"] == "" || $data["Lon"] == "") {
+		echo "  <!-- Street: ".$street." Number: ".$number." without coordinates.-->\n";
+		continue;
+	}
+
+
+	switch ($data["tipologia"]) {
+	case "Portal":
+	case "Garaje":
+		echo "	<node id='$i' action='modify' visible='true' lat='".$data["Lat"]."' lon='".$data["Lon"]."'>
 		<tag k='addr:housenumber' v='".$number."' />
 		<tag k='addr:postcode' v='".$data["codigo_postal"]."' />
 		<tag k='addr:street' v='".$street."' />
 	</node>\n";
-	
+	break;
+
+	case "Frente fachada":
+		echo "	<node id='$i' action='modify' visible='true' lat='".$data["Lat"]."' lon='".$data["Lon"]."'>
+		<tag k='addr:housenumber' v='".$number."' />
+		<tag k='addr:postcode' v='".$data["codigo_postal"]."' />
+		<tag k='addr:street' v='".$street."' />
+		<tag k='note' v='Número frente fachada' />
+	</node>\n";
+		
+	default:
+		//echo "  <!-- tipologia ".$data["tipologia"]." ignorada -->\n";
+	}
 	
 };
 
+echo "<!-- Total rows processed: ".$i*(-1)." -->\n";
 echo "</osm>";
 
 ?>
