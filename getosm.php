@@ -87,7 +87,7 @@ while ($data = $query->fetchArray(SQLITE3_ASSOC)) {
 	$number = $data["literal_numeracion"];
 	if (substr($number,0,3) == "NUM") {
 		$number = ltrim(substr($number, 3), "0");
-	} else if (subst($number, 0, 3) == "KM.") {
+	} else if (substr($number, 0, 3) == "KM.") {
 		$number = substr($number,3);
 		$suffix = substr($number,6);
 		switch ($suffix) {
@@ -114,7 +114,7 @@ while ($data = $query->fetchArray(SQLITE3_ASSOC)) {
 
 		$number = sprintf("%.3f",ltrim(substr($number, 0, 6),"0") / 1000);
 		
-		$number = str_replace($number, ".", ",");
+		$number = str_replace(".", ",", $number);
 		$number = "Km ".$number." ".$suffix;
 	}
 
@@ -145,7 +145,16 @@ while ($data = $query->fetchArray(SQLITE3_ASSOC)) {
 	</node>\n";
 		
 	default:
-		//echo "  <!-- tipologia ".$data["tipologia"]." ignorada -->\n";
+		if ($_POST["exportarparques"]) {
+			echo "	<node id='$i' action='modify' visible='true' lat='".$data["Lat"]."' lon='".$data["Lon"]."'>
+		<tag k='addr:housenumber' v='".$number."' />
+		<tag k='addr:postcode' v='".$data["codigo_postal"]."' />
+		<tag k='addr:street' v='".$street."' />
+                <tag k='note' v='Número de ".$data["tipologia"]."' />
+	</node>\n";
+		} else {
+			echo "  <!-- Numero ".$number." con tipologia ".$data["tipologia"]." ignorada -->\n";
+		}
 	}
 	
 };
