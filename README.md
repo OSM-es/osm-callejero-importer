@@ -33,7 +33,7 @@ Creación de base de datos
 
  * Columna AB (Longitud)
   
-  `=SUSTITUIR(IZQUIERDA($S1;ENCONTRAR("º";$S1)-1)+((1/60)*EXTRAEB($S1; ENCONTRAR("º"; $S1)+1;ENCONTRAR("'";$S1)-ENCONTRAR("º";$S1)-1))+((1/3600)*SUSTITUIR(EXTRAEB($S1;ENCONTRAR("'";$S1)+1;ENCONTRAR(" ";$S1)-ENCONTRAR("'";$S1)-3);".";","));",";".")`
+  `=SUSTITUIR((-1)*(IZQUIERDA($S1;ENCONTRAR("º";$S1)-1)+((1/60)*EXTRAEB($S1; ENCONTRAR("º"; $S1)+1;ENCONTRAR("'";$S1)-ENCONTRAR("º";$S1)-1))+((1/3600)*SUSTITUIR(EXTRAEB($S1;ENCONTRAR("'";$S1)+1;ENCONTRAR(" ";$S1)-ENCONTRAR("'";$S1)-3);".";",")));",";".")`
 
 * Generar nuevo fichero en formato sqlite3: `sqlite3 fichero.sqlite`
 
@@ -44,4 +44,13 @@ Creación de base de datos
   `.mode csv  
    .separator ;  
    .import /ruta/a/CALLEJERO.CSV CALLEJERO`
+   
+* Crear índices en la base de datos
+
+  `create index clase_via_idx on CALLEJERO(clase_via);  
+   create index nombre_via_idx on CALLEJERO(nombre_via);
+   create index nombre_distrito_idx on CALLEJERO(nombre_distrito);
+   create index nombre_barrio_idx on CALLEJERO(nombre_barrio);
+   create index codigo_postal_idx on CALLEJERO(codigo_postal);
+  `
    
