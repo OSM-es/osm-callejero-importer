@@ -47,10 +47,9 @@ Creación de base de datos
    
 * Crear índices en la base de datos
 
-  `create index clase_via_idx on CALLEJERO(clase_via);  
-   create index nombre_via_idx on CALLEJERO(nombre_via);
-   create index nombre_distrito_idx on CALLEJERO(nombre_distrito);
-   create index nombre_barrio_idx on CALLEJERO(nombre_barrio);
-   create index codigo_postal_idx on CALLEJERO(codigo_postal);
-  `
+  `create index clase_via_idx on CALLEJERO(clase_via);`  
+  `create index nombre_via_idx on CALLEJERO(nombre_via);`    
+  `create index nombre_distrito_idx on CALLEJERO(nombre_distrito);`  
+  `create index nombre_barrio_idx on CALLEJERO(nombre_barrio);`  
+  `create index codigo_postal_idx on CALLEJERO(codigo_postal);`
    
