@@ -1,8 +1,8 @@
 $(document).ready(function () {
     ajaxFillSelect("clase_via", "clase_via");
     ajaxFillSelect("nombre_via", "nombre_via");
-    ajaxFillSelect("distrito", "nombre_distrito");
-    ajaxFillSelect("barrio", "nombre_barrio");
+    ajaxFillSelect("distrito", "cod_distrito");
+    ajaxFillSelect("barrio", "cod_barrio");
     ajaxFillSelect("codigo_postal", "codigo_postal");
 });
 

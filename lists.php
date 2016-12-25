@@ -7,27 +7,11 @@ if(! isset($_GET["field"])) {
 
 if (! in_array(strtolower($_GET["field"]), 
 	       array(
-		       "cod_numero",
-		       "cod_via", 
 		       "clase_via",
-		       "particula_via",
 		       "nombre_via",
-		       "literal_numeracion",
 		       "cod_distrito",
-		       "nombre_distrito",
 		       "cod_barrio",
-		       "nombre_barrio",
-		       "seccion_censal",
-		       "codigo_postal",
-		       "seccion_carteria",
-		       "zona_ser",
-		       "categoria_fiscal",
-		       "direccion_completa",
-		       "tipo_via",
-		       "situacion_via",
-		       "denominacion_via",
-		       "tipologia",
-		       "zona_valor"))) {
+		       "codigo_postal"))) {
 	header("HTTP/1.0 404 Not Found");
 	exit;
 }

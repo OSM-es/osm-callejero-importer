@@ -57,10 +57,10 @@ if ($_POST["nombre_via"]!="")
 	$arrayWhere[] = "nombre_via='".$_POST["nombre_via"]."'";
 
 if ($_POST["distrito"]!="")
-	$arrayWhere[] = "nombre_distrito='".$_POST["distrito"]."'";
+	$arrayWhere[] = "cod_distrito='".$_POST["distrito"]."'";
 
 if ($_POST["barrio"]!="")
-	$arrayWhere[] = "nombre_barrio='".$_POST["barrio"]."'";
+	$arrayWhere[] = "cod_barrio='".$_POST["barrio"]."'";
 
 if ($_POST["codigo_postal"]!="")
 	$arrayWhere[] = "codigo_postal='".$_POST["codigo_postal"]."'";
@@ -84,76 +84,50 @@ while ($data = $query->fetchArray(SQLITE3_ASSOC)) {
 	$i = $i - 1;
 
 
-	$number = $data["literal_numeracion"];
-	if (substr($number,0,3) == "NUM") {
-		$number = ltrim(substr($number, 3), "0");
-	} else if (substr($number, 0, 3) == "KM.") {
-		$number = substr($number,3);
-		$suffix = substr($number,6);
-		switch ($suffix) {
-		case "EN":
-			$suffix="entrada";
-			break;
-		case "SA":
-			$suffix="salida";
-			break;
-		case "EX":
-			$suffix="exterior";
-			break;
-		case "IN":
-			$suffix="interior";
-			break;
-		case " I":
-			$suffix="I";
-			break;
-		case " D":
-			$suffix="D";
-			break;
-		default:
-		}
-
-		$number = sprintf("%.3f",ltrim(substr($number, 0, 6),"0") / 1000);
-		
-		$number = str_replace(".", ",", $number);
-		$number = "Km ".$number." ".$suffix;
+	$number = trim($data["literal_numeracion"]);
+	if ($data['calificador'] <> '') {
+		$suffix = $data['calificador'];
 	}
 
-	$street = ucwords_specific(mb_strtolower($data["clase_via"]), "'-", "UTF-8")." ".$data["particula_via"]." ".ucwords_specific(mb_strtolower($data["nombre_via"]), "'-", "utf-8");
+	$street = ucwords_specific(mb_strtolower(trim($data["clase_via"])), "'-", "UTF-8")." ".mb_strtolower(trim($data["particula_via"]))." ".ucwords_specific(mb_strtolower(trim($data["nombre_via"])), "'-", "utf-8");
 
-	if ($data["Lat"] == "" || $data["Lon"] == "") {
+	if (trim($data["Lat"]) == "" || trim($data["Lon"]) == "") {
 		echo "  <!-- Street: ".$street." Number: ".$number." without coordinates.-->\n";
 		continue;
 	}
 
 
-	switch ($data["tipologia"]) {
-	case "Portal":
-	case "Garaje":
+	switch (trim($data["tipologia"])) {
+	case "PORTAL":
+	case "GARAJE":
 		echo "	<node id='$i' action='modify' visible='true' lat='".$data["Lat"]."' lon='".$data["Lon"]."'>
 		<tag k='addr:housenumber' v='".$number."' />
-		<tag k='addr:postcode' v='".$data["codigo_postal"]."' />
+		<tag k='addr:postcode' v='".trim($data["codigo_postal"])."' />
 		<tag k='addr:street' v='".$street."' />
+		<tag k='source' v='Ayuntamiento de Madrid' />
 	</node>\n";
 	break;
 
-	case "Frente fachada":
+	case "FRENTE FACHADA":
 		echo "	<node id='$i' action='modify' visible='true' lat='".$data["Lat"]."' lon='".$data["Lon"]."'>
 		<tag k='addr:housenumber' v='".$number."' />
-		<tag k='addr:postcode' v='".$data["codigo_postal"]."' />
+		<tag k='addr:postcode' v='".trim($data["codigo_postal"])."' />
 		<tag k='addr:street' v='".$street."' />
 		<tag k='note' v='Número frente fachada' />
+		<tag k='source' v='Ayuntamiento de Madrid' />
 	</node>\n";
 		
 	default:
 		if ($_POST["exportarparques"]) {
 			echo "	<node id='$i' action='modify' visible='true' lat='".$data["Lat"]."' lon='".$data["Lon"]."'>
 		<tag k='addr:housenumber' v='".$number."' />
-		<tag k='addr:postcode' v='".$data["codigo_postal"]."' />
+		<tag k='addr:postcode' v='".trim($data["codigo_postal"])."' />
 		<tag k='addr:street' v='".$street."' />
-                <tag k='note' v='Número de ".$data["tipologia"]."' />
+        <tag k='note' v='Número de ".mb_strtolower(trim($data["tipologia"]))."' />
+		<tag k='source' v='Ayuntamiento de Madrid' />
 	</node>\n";
 		} else {
-			echo "  <!-- Numero ".$number." con tipologia ".$data["tipologia"]." ignorada -->\n";
+			echo "  <!-- Numero ".$number." con tipologia «".mb_strtolower(trim($data["tipologia"]))."» ignorado -->\n";
 		}
 	}
 	
